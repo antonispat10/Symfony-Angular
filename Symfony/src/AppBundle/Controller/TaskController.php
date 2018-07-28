@@ -164,45 +164,46 @@ class TaskController extends Controller {
         return $helpers->json($data);
         }
 
-        public function taskAction(Request $request,$id = null) {
-            $helpers = $this->get(Helpers::class);
-            $jwt_auth = $this->get(JwtAuth::class);
+    public function taskAction(Request $request, $id = null){
+        $helpers = $this->get(Helpers::class);
+        $jwt_auth = $this->get(JwtAuth::class);
 
-            $token = $request->get('authorization', null);
-            $authCheck = $jwt_auth->checkToken($token);
+        $token = $request->get('authorization', null);
+        $authCheck = $jwt_auth->checkToken($token);
 
-            if($authCheck){
-                $identity = $jwt_auth->checkToken($token,true);
+        if($authCheck){
+            $identity = $jwt_auth->checkToken($token, true);
 
-                $em = $this->getDoctrine()->getManager();
+            $em = $this->getDoctrine()->getManager();
 
-                $task = $em->getRepository('BackendBundle:Task')->findOneBy(array(
-                    'id' => $id
-                ));
+            $task = $em->getRepository('BackendBundle:Task')->findOneBy(array(
+                'id' => $id
+            ));
 
-                if($task && is_object($task) && $identity->sub == $task->getUser()->getId()){
-                    $data = array(
-                        'status' => 'success',
-                        'code' => 200,
-                        'msg' => $task
-                    );
-                }else {
-                    $data = array(
-                        'status' => 'error',
-                        'code' => 404,
-                        'msg' => 'Task not found'
-                    );
-                }
-
-            } else {
+            if($task && is_object($task) && $identity->sub == $task->getUser()->getId()){
+                $data = array(
+                    'status' => 'success',
+                    'code'   => 200,
+                    'data'	 => $task
+                );
+            }else{
                 $data = array(
                     'status' => 'error',
-                    'code' => 400,
-                    'msg' => 'Authorization not valid'
+                    'code'   => 404,
+                    'msg'	 => 'Task not found'
                 );
             }
-            return $helpers->json($data);
+
+        }else{
+            $data = array(
+                'status' => 'error',
+                'code'   => 400,
+                'msg'	 => 'Authorization not valid'
+            );
         }
+
+        return $helpers->json($data);
+    }
 
         public function searchAction(Request $request, $search = null) {
             $helpers = $this->get(Helpers::class);
